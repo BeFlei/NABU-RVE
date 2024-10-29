@@ -1,1 +1,46 @@
+function filterEvents() {
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth() + 1;  // JavaScript Monate: 0-11
+    const currentYear = currentDate.getFullYear();
+    const nextMonth = (currentMonth % 12) + 1;
+    const nextYear = currentMonth === 12 ? currentYear + 1 : currentYear;
 
+    const group = document.getElementById("group-filter").value;
+    const month = document.getElementById("month-filter").value;
+
+    document.querySelectorAll(".text > div").forEach(block => {
+        const blockText = block.innerText || block.textContent;
+
+        const groupMatch = blockText.match(/Zielgruppe:\s*(Erwachsene|Kinder ab 10 Jahre)/);
+        const eventGroup = groupMatch ? (groupMatch[1] === "Erwachsene" ? "adults" : "kids") : "";
+
+        const dateMatch = blockText.match(/Datum:\s*(\d{1,2})\.\s*(\w+)\s*(\d{4})/);
+        let eventMonth = "";
+        let eventYear = "";
+        if (dateMatch) {
+            const day = parseInt(dateMatch[1]);
+            const monthName = dateMatch[2];
+            eventYear = parseInt(dateMatch[3]);
+
+            const months = { "Januar": 1, "Februar": 2, "März": 3, "April": 4, "Mai": 5, "Juni": 6, "Juli": 7, "August": 8, "September": 9, "Oktober": 10, "November": 11, "Dezember": 12 };
+            eventMonth = months[monthName];
+        }
+
+        const groupMatchCondition = (group === "all" || eventGroup === group);
+        let monthMatchCondition = false;
+        if (month === "all") {
+            monthMatchCondition = true;
+        } else if (month === "current") {
+            monthMatchCondition = (eventMonth === currentMonth && eventYear === currentYear);
+        } else if (month === "next") {
+            monthMatchCondition = (eventMonth === nextMonth && eventYear === nextYear);
+        }
+
+        block.style.display = (groupMatchCondition && monthMatchCondition) ? "block" : "none";
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("month-filter").value = "current";
+    filterEvents();
+});
